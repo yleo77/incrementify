@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+
+var fs = require('fs');
+var colors = require('colors');
+var program = require('commander');
+
+var conf = require('../package.json');
+var incrementify = require('../').build;
+
+program
+  .version(conf.version)
+  .usage('[options] oldfile newfile')
+  .option('-o, --output [output-file]', 'use [output-file] as output instead of STDOUT')
+  .option('-c, --chunkSize [chunkSize]', 'set chunkSize (default: 12)');
+
+program.on('--help', function(){
+  console.log('  Examples:');
+  console.log('');
+  console.log('    $ incrementify file_with_old.js file_with_newer.js');
+  console.log('    $ incrementify file_with_old.js file_with_newer.js -o file-inc.js');
+  console.log('');
+});
+
+program.parse(process.argv);
+
+program.helpInformation = function(){
+
+  return ['',
+    '  ' + 'Usage: ' + this._name + ' ' + this.usage(),
+    ' ',
+    '  Options:',
+    '',
+    '' + this.optionHelp().replace(/^/gm, '    '),
+    '',
+    ''
+  ].join('\n');
+};
+
+var config = {};
+if(program.chunkSize) {
+  config.chunkSize = program.chunkSize;
+}
+if(program.output) {
+  config.output = program.output;
+}
+
+if(program.args.length === 2) {
+
+  var ret = incrementify(program.args[0], program.args[1], config);
+  if(ret.status) {
+    if(!config.output){
+      console.log(ret.code);
+    }
+  } else {
+    console.log(ret.code);
+    process.exit(1);
+  }
+} else {
+  console.log('\n  ' + 'Opps...'.red + ' You may need help');
+  console.log(program.helpInformation());
+  program.emit('--help');
+}
+
+
+
