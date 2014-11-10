@@ -1,6 +1,6 @@
 {
   "name": "incrementify",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "incrementify - generate increment file with two versions of a file base on old version",
   "main": "./index.js",
   "scripts": {
@@ -15,5 +15,13 @@
   "dependencies": {
     "colors": "^1.0.3",
     "commander": "^2.5.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yleo77/incrementify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yleo77/incrementify/issues"
+  },
+  "homepage": "https://github.com/yleo77/incrementify"
 }
