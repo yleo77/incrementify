@@ -1,8 +1,11 @@
 // @copyright Tencent MT Team
 
 var fs = require('fs');
+var path = require('path');
 var crypto = require('crypto');
+
 var chunkSize = 12;
+var helper = require('./lib/helper');
 
 /**
  * 根据旧文件和新文件差异，生成基于旧文件的增量内容
@@ -50,6 +53,7 @@ exports.build = function(oldfilepath, newfilepath, config, callback) {
     ret.code = JSON.stringify(makeIncDataFile(oldfilepath, newfilepath));
     if (config.output) {
       try {
+        helper.insure(path.dirname(config.output));
         fs.writeFileSync(config.output, ret.code);
         set();
       } catch (e) {
