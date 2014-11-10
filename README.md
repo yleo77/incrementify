@@ -31,6 +31,11 @@ var ret = incrementify(arg1, arg2, {
 });
 ```
 
+### Resources
+
+* [MT - 手机腾讯网](http://mt.tencent.com/)
+* [用增量更新算法为 web 应用节省流量](http://www.ibm.com/developerworks/cn/web/1401_luyf_reducejs/) by [luyongfugx](https://github.com/luyongfugx)
+
 ## License
 
 The MIT License (MIT)
