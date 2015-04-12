@@ -26,8 +26,10 @@ Also support config
 
 ```javascript
 var ret = incrementify(arg1, arg2, {
-  chunkSize: 12, //default size
-  output: 'filename'  // make sure you have write permission to this file
+  oldfile_type: 'content',   // default: 'path' 
+  newfile_type: 'path',      // default: 'path' 
+  chunkSize: 12,             //default size
+  output: 'filename'         // make sure you have write permission to this file
 });
 ```
 

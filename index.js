@@ -22,10 +22,11 @@ var helper = require('./lib/helper');
  *     1 **旧**版本文件不存在
  *     2 **新**版本文件不存在
  *     3 当需要写入文件时，写入失败
+ *     4 调用参数类型有误
  *     10 增量文件内容获取成功, (需要写入文件时同时写入成功)
  *   code: {string}当 signal 为 true 时 则为生成的增量内容，否则为失败原因
  */
-exports.build = function(oldfilepath, newfilepath, config, callback) {
+exports.build = function(oldfilepath, newfilepath, config) {
 
   var ret = {
     status: false,
@@ -33,24 +34,25 @@ exports.build = function(oldfilepath, newfilepath, config, callback) {
     code: ''
   };
 
-  if (!oldfilepath || !fs.existsSync(oldfilepath)) {
+  config = config || {};
+  
+  //  path, content
+  config.oldfile_type = config.oldfile_type ||'path'; 
+  config.newfile_type = config.newfile_type || 'path'; 
+
+  if (config.oldfile_type != 'path' && (!oldfilepath || !fs.existsSync(oldfilepath))) {
     ret.signal = 1;
     ret.code = '目标文件 ' + oldfilepath + ' 不存在, 不需要生成增量文件';
-  } else if (!newfilepath || !fs.existsSync(newfilepath)) {
+  } else if (config.newfile_type != 'path' && (!newfilepath || !fs.existsSync(newfilepath))) {
     ret.signal = 2;
     ret.code = '目标文件新版本 ' + newfilepath + ' 不存在, 请检查配置';
   } else {
-
-    if (arguments.length === 3 && typeof config === 'function') {
-      callback = config;
-      config = {};
-    }
 
     if (config.chunkSize) {
       chunkSize = config.chunkSize;
     }
 
-    ret.code = JSON.stringify(makeIncDataFile(oldfilepath, newfilepath));
+    ret.code = JSON.stringify(makeIncDataFile(oldfilepath, newfilepath, config));
     if (config.output) {
       try {
         helper.insure(path.dirname(config.output));
@@ -73,14 +75,14 @@ exports.build = function(oldfilepath, newfilepath, config, callback) {
   }
 };
 
-function makeIncDataFile(oldFile, newFile) {
+function makeIncDataFile(oldFile, newFile, config) {
 
-  var oldFileContent = fs.readFileSync(oldFile, {
+  var oldFileContent = config.oldfile_type === 'path' ? fs.readFileSync(oldFile, {
     encoding: 'utf8'
-  });
-  var newFileContent = fs.readFileSync(newFile, {
+  }) : oldFile;
+  var newFileContent = config.newfile_type === 'path' ? fs.readFileSync(newFile, {
     encoding: 'utf8'
-  });
+  }) : newFile;
 
   var resultFile = {
     modify: true,
@@ -89,14 +91,15 @@ function makeIncDataFile(oldFile, newFile) {
   var strDataArray = [];
 
   //计算新旧两个文件，如果相同则说明文件没有改动,则直接返回空数组
-  if (getMd5(oldFileContent) == getMd5(fs.readFileSync(newFile))) {
+  if (getMd5(oldFileContent) == getMd5(newFileContent)) {
     resultFile.modify = false;
     resultFile.data = strDataArray;
     return resultFile;
   }
 
   var oldChecksum = oldFileChecksum(oldFileContent, chunkSize);
-  var diffArray = searchChunk(newFile, oldChecksum, chunkSize);
+  //var diffArray = searchChunk(newFile, oldChecksum, chunkSize);
+  var diffArray = searchChunk(newFileContent, oldChecksum, chunkSize);
   var arrayData = "";
   var lastitem = null;
   var matchCount = 0;
@@ -156,7 +159,7 @@ function doExactMatch(incDataArray, chunkNo) {
   incDataArray.push(di);
 }
 
-function searchChunk(newFile, checksumArray, chunkSize) {
+function searchChunk(newFileContent, checksumArray, chunkSize) {
 
   var incDataArray = [];
   //chunk
@@ -165,9 +168,7 @@ function searchChunk(newFile, checksumArray, chunkSize) {
   var outBuffer = "";
   // 指向块后的第一个字符
   var currentIndex = 0;
-  var strInput = fs.readFileSync(newFile, {
-    encoding: 'utf8'
-  });
+  var strInput = newFileContent;
   var tLen = strInput.length;
   var lastmatchNo = 0;
   while (currentIndex <= tLen) {

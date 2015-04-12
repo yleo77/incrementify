@@ -1,6 +1,6 @@
 {
   "name": "incrementify",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "incrementify - generate increment file with two versions of a file base on old version",
   "main": "./index.js",
   "scripts": {
