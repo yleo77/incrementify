@@ -15,6 +15,10 @@ var helper = require('./lib/helper');
  * @param {string} oldpath 旧文件路径 required
  * @param {string} newpath 新文件路径 required
  * @param {object} config  可选配置
+ *                   oldfile_type: 'path|content'
+ *                   newfile_type: 'path|content'
+ *                   chunkSize: number
+ *                   output: filename
  *
  * @return {object}
  *   status: {boolean} 是否生成,false 为对应文件不存在时生成失败。
@@ -40,10 +44,10 @@ exports.build = function(oldfilepath, newfilepath, config) {
   config.oldfile_type = config.oldfile_type ||'path'; 
   config.newfile_type = config.newfile_type || 'path'; 
 
-  if (config.oldfile_type != 'path' && (!oldfilepath || !fs.existsSync(oldfilepath))) {
+  if (config.oldfile_type === 'path' && (!oldfilepath || !fs.existsSync(oldfilepath))) {
     ret.signal = 1;
     ret.code = '目标文件 ' + oldfilepath + ' 不存在, 不需要生成增量文件';
-  } else if (config.newfile_type != 'path' && (!newfilepath || !fs.existsSync(newfilepath))) {
+  } else if (config.newfile_type === 'path' && (!newfilepath || !fs.existsSync(newfilepath))) {
     ret.signal = 2;
     ret.code = '目标文件新版本 ' + newfilepath + ' 不存在, 请检查配置';
   } else {
@@ -276,10 +280,5 @@ function checkMatchIndex(chunkMd5, checksumArray, lastmatchNo) {
 }
 
 function getMd5(c) {
-  // var s = c;
-  // var md5sum = crypto.createHash('md5');
-  // md5sum.update(s);
-  // return md5sum.digest('hex');
-
   return crypto.createHash('md5').update(c).digest('hex');
 }
